@@ -107,6 +107,23 @@ export function createGitHubAdapter(installationId: number): ForgeAdapter {
 			);
 		},
 
+		async getRawAttachment(assetId) {
+			if (
+				!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+					assetId,
+				)
+			) {
+				throw new ForgeHttpError(400);
+			}
+			// GitHub resolves this stable URL to the underlying image. For private
+			// attachments the authenticated request is important; fetch removes the
+			// Authorization header if GitHub redirects to its signed image host.
+			return githubFetch(
+				`https://github.com/user-attachments/assets/${assetId}`,
+				"application/octet-stream",
+			);
+		},
+
 		listReleases: (owner, repo) => listReleases(octokit(), owner, repo),
 
 		archiveResponse: (owner, repo, ref) =>

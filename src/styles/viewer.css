@@ -736,6 +736,32 @@ body[data-viewer-tree="open"] .viewer__tree-backdrop {
 	background: var(--gh-raised);
 }
 
+/* Native GitHub-README disclosure blocks (<details>/<summary>). */
+.readme details {
+	margin: 0 0 var(--sp-4);
+	padding: 0.65em 1em;
+	border: 1px solid var(--gh-border-muted);
+	border-radius: var(--gh-r);
+	background: var(--gh-canvas);
+}
+.readme details > summary {
+	cursor: pointer;
+	font-weight: 600;
+	color: var(--gh-fg);
+}
+.readme details > summary::marker {
+	color: var(--gh-fg-muted);
+}
+.readme details[open] > summary {
+	margin-bottom: var(--sp-3);
+}
+.readme details > :last-child {
+	margin-bottom: 0;
+}
+.readme details img {
+	margin-block: var(--sp-2);
+}
+
 /* ----- Releases view ----------------------------------------------- */
 .releases {
 	display: flex;

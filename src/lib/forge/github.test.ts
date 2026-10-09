@@ -172,6 +172,33 @@ describe("getRawFile", () => {
 		);
 	});
 
+	it("requests a GitHub user attachment through the installation token", async () => {
+		const upstream = new Response("image", {
+			status: 200,
+			headers: { "content-type": "image/png" },
+		});
+		fetchMock.mockResolvedValue(upstream);
+		const response = await createGitHubAdapter(5).getRawAttachment?.(
+			"ac0d2c11-b338-43b1-ac55-37394abe6427",
+		);
+		expect(response).toBe(upstream);
+		const [url, init] = fetchMock.mock.calls[0];
+		expect(url).toBe(
+			"https://github.com/user-attachments/assets/ac0d2c11-b338-43b1-ac55-37394abe6427",
+		);
+		expect(init.headers).toMatchObject({
+			Authorization: "Bearer inst-token",
+			Accept: "application/octet-stream",
+		});
+	});
+
+	it("rejects malformed user-attachment IDs before any request", async () => {
+		await expect(
+			createGitHubAdapter(5).getRawAttachment?.("not-an-asset-id"),
+		).rejects.toBeInstanceOf(ForgeHttpError);
+		expect(fetchMock).not.toHaveBeenCalled();
+	});
+
 	it.each(["", "..", "a/../b", "/abs", "a//b", "a\\b"])(
 		"rejects the unsafe path %j before any request",
 		async (path) => {

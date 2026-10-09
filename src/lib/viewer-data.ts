@@ -3,6 +3,7 @@ import { adapterForTarget } from "@/lib/forge/target";
 import type { Contents, DirEntry, TreeItem } from "@/lib/github-repo";
 import { highlight } from "@/lib/highlight";
 import { isMarkdown, renderMarkdown } from "@/lib/markdown";
+import { rewriteGitHubAttachmentReferences } from "@/lib/repo-asset";
 import {
 	buildHref,
 	parseView,
@@ -57,6 +58,7 @@ export type ViewerPayload =
 export async function resolveViewer(
 	slug: string[],
 	shareId: string,
+	appOrigin = "",
 ): Promise<ViewerPayload> {
 	if (!shareId) {
 		return {
@@ -241,13 +243,37 @@ export async function resolveViewer(
 		// (preview is the default; both present = show the tabs).
 		codeHtml = await highlight(contents.text, contents.name);
 		if (isMarkdown(contents.name)) {
-			// Only GitHub has a markdown API; every other forge uses the local renderer (markdown-it, html:false).
-			mdHtml =
-				(await adapter.renderMarkdown?.(
-					target.owner,
-					target.repo,
-					contents.text,
-				)) ?? renderMarkdown(contents.text);
+			// Rewrite GitHub attachment URLs to this app's share-scoped endpoint.
+			// IMPORTANT: do not send this rewritten Markdown to GitHub's Markdown API.
+			// GitHub tries to proxy image URLs while rendering and may reject our own
+			// endpoint with "Cannot proxy the given URL". Markdown containing these
+			// attachments is therefore rendered locally; all other files retain
+			// GitHub's renderer and its GFM-specific features.
+			const markdownForPreview =
+				adapter.forge === "github"
+					? rewriteGitHubAttachmentReferences(
+						contents.text,
+						{ owner: target.owner, repo: target.repo, ref, filePath: path },
+						shareId,
+						appOrigin,
+					)
+					: contents.text;
+
+			if (markdownForPreview !== contents.text) {
+				// The local renderer preserves a restricted, sanitized set of <img>
+				// attributes and therefore accepts the internal attachment endpoint
+				// without exposing that URL to GitHub's image proxy.
+				mdHtml = renderMarkdown(markdownForPreview);
+			} else {
+				// Only GitHub has a Markdown API; all other forges use markdown-it.
+				// The local fallback allows sanitized <img> tags, not arbitrary HTML.
+				mdHtml =
+					(await adapter.renderMarkdown?.(
+						target.owner,
+						target.repo,
+						contents.text,
+					)) ?? renderMarkdown(contents.text);
+			}
 		}
 	}
 

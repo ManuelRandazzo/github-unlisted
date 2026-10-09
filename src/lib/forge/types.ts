@@ -67,6 +67,8 @@ export interface ForgeAdapter {
 		path: string,
 		ref: string,
 	): Promise<Response>;
+	/** Raw GitHub user-attachment fetch; only supported for the GitHub adapter. */
+	getRawAttachment?(assetId: string): Promise<Response>;
 	listReleases(owner: string, repo: string): Promise<Release[]>;
 	archiveResponse(
 		owner: string,
