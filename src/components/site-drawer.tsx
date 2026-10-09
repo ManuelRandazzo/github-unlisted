@@ -108,7 +108,7 @@ export function SiteDrawer({ signedIn, active = null }: Props) {
 					{signedIn ? (
 						<a href="/api/github/logout">Sign out</a>
 					) : (
-						<a href="/api/github/login" className="is-cta">
+						<a href="/app" className="is-cta">
 							Sign in
 						</a>
 					)}

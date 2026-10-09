@@ -62,7 +62,7 @@ function FileIcon() {
 	);
 }
 
-// Supported image formats to ensure that most of the common extensions become visible 
+// Supported image formats to ensure that most of the common extensions become visible
 const IMAGE_EXTENSIONS = new Set([
 	".png",
 	".jpg",
@@ -160,7 +160,7 @@ function RepoHtml({
 
 	const repairedHtml = React.useMemo(
 		() =>
-			repairRepoImages(html, {owner, repo, ref: repoRef, filePath,}, shareId),
+			repairRepoImages(html, { owner, repo, ref: repoRef, filePath }, shareId),
 		[html, owner, repo, repoRef, filePath, shareId],
 	);
 
@@ -477,9 +477,7 @@ function FileOrDirView({
 									/>
 								</div>
 							) : contents.isBinary ? (
-								<div className="tree__empty">
-									Binary file not shown.
-								</div>
+								<div className="tree__empty">Binary file not shown.</div>
 							) : showPreview && mdHtml ? (
 								<RepoHtml
 									className="readme"

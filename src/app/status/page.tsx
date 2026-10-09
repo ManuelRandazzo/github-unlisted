@@ -41,7 +41,7 @@ const log: LogEntry[] = [
 		endedUtc: "2026-08-07 00:35 UTC",
 		category: "maintenance",
 		severity: "medium",
-		body: "Nothing was affected, just testing things to make sure nothing was broken. All in all, no user or viewer were affected.",	
+		body: "Nothing was affected, just testing things to make sure nothing was broken. All in all, no user or viewer were affected.",
 	},
 	{
 		id: "2026-08-04-share-controls",
@@ -163,7 +163,7 @@ export default async function StatusPage() {
 						Sign Out
 					</a>
 				) : (
-					<a className="nav-cta" href="/api/github/login">
+					<a className="nav-cta" href="/app">
 						Sign In
 					</a>
 				)}

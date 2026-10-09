@@ -70,7 +70,7 @@ export default async function FaqPage() {
 						Sign Out
 					</a>
 				) : (
-					<a className="nav-cta" href="/api/github/login">
+					<a className="nav-cta" href="/app">
 						Sign In
 					</a>
 				)}
@@ -80,10 +80,7 @@ export default async function FaqPage() {
 
 			<main className="faq-content">
 				<div className="faq-content__inner">
-
-					<h1 className="faq-title">
-						Questions?
-					</h1>
+					<h1 className="faq-title">Questions?</h1>
 
 					<p className="faq-lede">
 						A short list. If you have something else on your mind, the source is

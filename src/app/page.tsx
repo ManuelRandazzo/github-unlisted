@@ -79,7 +79,7 @@ export default async function Page() {
 						Sign Out
 					</a>
 				) : (
-					<a className="nav-cta" href="/api/github/login">
+					<a className="nav-cta" href="/app">
 						Sign In
 					</a>
 				)}

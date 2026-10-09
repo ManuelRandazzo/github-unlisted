@@ -1,11 +1,13 @@
 import "@/styles/global.css";
 import "@/styles/dashboard.css";
 import { DashboardClient } from "@/components/dashboard-client";
+import { ForgePicker } from "@/components/forge-picker";
 import { SiteFooter } from "@/components/site-footer";
+import { adapterForConnection } from "@/lib/forge/connections";
 import { listInstallationRepos } from "@/lib/github-app";
 import { pageMetadata } from "@/lib/seo";
 import { getSession } from "@/lib/session";
-import { listSharesForInstallation } from "@/lib/share-store";
+import { listSharesForOwner } from "@/lib/share-store";
 
 export const dynamic = "force-dynamic";
 
@@ -40,9 +42,7 @@ export default async function AppPage({
 							Install it and pick the repos to share.
 						</p>
 					)}
-					<a className="btn btn--accent" href="/api/github/login">
-						Sign in with GitHub
-					</a>
+					<ForgePicker />
 					{installUrl && (
 						<a className="signin-alt" href={installUrl}>
 							Or install the app on your repositories
@@ -54,30 +54,63 @@ export default async function AppPage({
 		);
 	}
 
-	let repos: {
-		installationId: number;
+	interface DashRepo {
+		installationId?: number;
+		connectionId?: string;
+		forge: string;
+		host: string;
 		owner: string;
 		name: string;
 		fullName: string;
 		private: boolean;
-	}[] = [];
+	}
+	let repos: DashRepo[] = [];
+	// One entry per connected account, so a slow or broken forge shows as an error on its own row instead of taking the whole dashboard down.
+	const connections = session.connections.map((c) => ({
+		...c,
+		error: false,
+	}));
 	let loadError: string | null = null;
 	try {
-		const lists = await Promise.all(
-			session.installationIds.map(async (id) =>
-				(await listInstallationRepos(id)).map((r) => ({
-					installationId: id,
-					owner: r.owner,
-					name: r.name,
-					fullName: r.fullName,
-					private: r.private,
-				})),
+		const lists = await Promise.all([
+			...session.installationIds.map(async (id) =>
+				(await listInstallationRepos(id)).map(
+					(r): DashRepo => ({
+						installationId: id,
+						forge: "github",
+						host: "github.com",
+						owner: r.owner,
+						name: r.name,
+						fullName: r.fullName,
+						private: r.private,
+					}),
+				),
 			),
-		);
+			...connections.map(async (c): Promise<DashRepo[]> => {
+				try {
+					const adapter = await adapterForConnection(c.id);
+					if (!adapter) throw new Error("gone");
+					return (await adapter.listRepos()).map((r) => ({
+						connectionId: c.id,
+						forge: c.forge,
+						host: c.host,
+						owner: r.owner,
+						name: r.name,
+						fullName: r.fullName,
+						private: r.private,
+					}));
+				} catch {
+					c.error = true;
+					return [];
+				}
+			}),
+		]);
+		// Deduplicated per forge: the same owner/name on two forges is two different repositories.
 		const seen = new Set<string>();
 		repos = lists.flat().filter((r) => {
-			if (seen.has(r.fullName)) return false;
-			seen.add(r.fullName);
+			const k = `${r.forge}:${r.fullName}`.toLowerCase();
+			if (seen.has(k)) return false;
+			seen.add(k);
 			return true;
 		});
 	} catch (e) {
@@ -86,6 +119,7 @@ export default async function AppPage({
 
 	let shares: {
 		id: string;
+		forge?: string;
 		owner: string;
 		repo: string;
 		createdAt?: number;
@@ -96,11 +130,13 @@ export default async function AppPage({
 		showReleases?: boolean;
 	}[] = [];
 	try {
-		const lists = await Promise.all(
-			session.installationIds.map((id) => listSharesForInstallation(id)),
-		);
-		shares = lists.flat().map((s) => ({
+		const all = await listSharesForOwner({
+			installationIds: session.installationIds,
+			connectionIds: session.connections.map((c) => c.id),
+		});
+		shares = all.map((s) => ({
 			id: s.id,
+			forge: s.forge ?? "github",
 			owner: s.owner,
 			repo: s.repo,
 			createdAt: s.createdAt,
@@ -130,6 +166,11 @@ export default async function AppPage({
 	}
 
 	return (
-		<DashboardClient repos={repos} shares={shares} login={session.login} />
+		<DashboardClient
+			repos={repos}
+			shares={shares}
+			login={session.login}
+			connections={connections}
+		/>
 	);
 }
