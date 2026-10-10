@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { deleteConnection } from "@/lib/forge/connections";
+import { deletePortfoliosForConnection } from "@/lib/portfolio-store";
 import { deleteSharesForConnection } from "@/lib/share-store";
 import {
 	getSession,
@@ -28,6 +29,7 @@ export async function DELETE(request: Request) {
 	}
 	await deleteConnection(connectionId);
 	await deleteSharesForConnection(connectionId);
+	await deletePortfoliosForConnection(connectionId);
 	await updateSessionConnections(session, removeConnection(session.connections, connectionId));
 	return NextResponse.json({ ok: true });
 }

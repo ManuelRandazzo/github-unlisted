@@ -507,6 +507,231 @@
 	cursor: not-allowed;
 }
 
+/* ----- Portfolios --------------------------------------------------- */
+/* Built only from existing dashboard tokens. Sits between the connected
+   accounts and the repo list, at natural height, so it never competes with
+   the list for the pinned-viewport layout. */
+.dash-portfolios {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	padding: 16px 20px;
+	background: var(--surface);
+	border: 1px solid var(--border-soft);
+	border-radius: var(--radius-md);
+}
+.pfm-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+}
+.pfm-title {
+	font-size: var(--fs-h3);
+	font-weight: 650;
+	color: var(--text);
+}
+.pfm-sub,
+.pfm-note,
+.pfm-field__hint {
+	font-size: var(--fs-caption);
+	color: var(--text-muted);
+	line-height: 1.5;
+}
+.pfm-new {
+	margin-top: 0;
+	white-space: nowrap;
+}
+.pfm-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.pfm-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 10px 14px;
+	background: var(--bg);
+	border: 1px solid var(--border-soft);
+	border-radius: var(--radius-md);
+}
+.pfm-row__copy {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+.pfm-row__name {
+	font-size: var(--fs-body);
+	color: var(--text);
+	overflow-wrap: anywhere;
+}
+.pfm-row__meta {
+	font-size: var(--fs-caption);
+	color: var(--text-muted);
+}
+.pfm-row__actions {
+	display: flex;
+	gap: 8px;
+	flex: none;
+}
+.pfm-row__actions .dash-btn {
+	margin-top: 0;
+	padding: 6px 16px;
+}
+
+.pfm-editor {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+.pfm-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+.pfm-field__label {
+	font-size: var(--fs-ui);
+	font-weight: 600;
+	color: var(--text-2);
+}
+.pfm-input {
+	width: 100%;
+	padding: 8px 12px;
+	background: var(--bg);
+	border: 1px solid var(--border-soft);
+	border-radius: var(--radius-md);
+	color: var(--text);
+	font-size: var(--fs-ui);
+}
+.pfm-input::placeholder {
+	color: var(--text-muted);
+}
+.pfm-input:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 1px;
+}
+.pfm-input:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+.pfm-textarea {
+	resize: vertical;
+	min-height: 4.5em;
+	line-height: 1.5;
+}
+.pfm-add {
+	margin-top: 8px;
+}
+
+/* The ordering list. Each row is draggable as a whole; the arrow buttons are
+   the keyboard and touch path, because native drag and drop does not work from
+   the keyboard and is unreliable on phones. */
+.pfm-order {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin: 4px 0 0;
+	padding: 0;
+	list-style: none;
+}
+.pfm-order__row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 10px;
+	background: var(--bg);
+	border: 1px solid var(--border-soft);
+	border-radius: var(--radius-md);
+	cursor: grab;
+}
+.pfm-order__row[data-dragging] {
+	opacity: 0.45;
+}
+/* The drop target is marked by an accent edge, not a colour change alone. */
+.pfm-order__row[data-over] {
+	border-color: var(--accent);
+	box-shadow: 0 0 0 1px var(--accent);
+}
+.pfm-order__grip {
+	color: var(--text-muted);
+	letter-spacing: -0.15em;
+	user-select: none;
+}
+.pfm-order__pos {
+	min-width: 1.6em;
+	color: var(--text-muted);
+	font-size: var(--fs-caption);
+	font-variant-numeric: tabular-nums;
+}
+.pfm-order__name {
+	flex: 1;
+	min-width: 0;
+	color: var(--text);
+	font-size: var(--fs-ui);
+	overflow-wrap: anywhere;
+}
+.pfm-order__ctl {
+	display: flex;
+	gap: 4px;
+	flex: none;
+}
+.pfm-icon-btn {
+	display: grid;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	background: var(--surface-2);
+	border: 1px solid hsl(from var(--text) h s l / 0.14);
+	border-radius: var(--radius-md);
+	color: var(--text-2);
+	cursor: pointer;
+}
+@media (hover: hover) {
+	.pfm-icon-btn:hover:not(:disabled) {
+		color: var(--text);
+		border-color: var(--border-strong);
+	}
+}
+.pfm-icon-btn:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 1px;
+}
+.pfm-icon-btn:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+.pfm-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 10px;
+	padding-top: 2px;
+	border-top: 1px solid var(--border-soft);
+}
+.pfm-actions .dash-btn {
+	margin-top: 8px;
+}
+/* Delete sits apart on the left; Cancel and Save stay together on the right. */
+.pfm-actions .dash-btn--danger {
+	margin-right: auto;
+}
+/* Visually hidden, still announced. */
+.pfm-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
 /* ----- Phone (480) ------------------------------------------------- */
 /* Stats and filters stack into rows, the repo list grows to 80vh (the
    document scrolls again instead of the pinned-viewport layout), panel
@@ -563,6 +788,21 @@
 	.dash-btn {
 		margin-top: 5px;
 		padding: 5px 18px;
+	}
+	.dash-portfolios {
+		padding: 12px;
+	}
+	.pfm-head,
+	.pfm-row {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 10px;
+	}
+	.pfm-row__actions {
+		flex-wrap: wrap;
+	}
+	.pfm-new {
+		align-self: flex-start;
 	}
 }
 
@@ -909,5 +1149,93 @@
 	.forge-settings__fields {
 		display: flex;
 		flex-direction: column;
+	}
+}
+
+/* ----- Portfolio picture ------------------------------------------- */
+.pfm-pic {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+.pfm-pic__frame {
+	flex: none;
+	width: 56px;
+	height: 56px;
+	border-radius: var(--radius-md);
+	background: var(--bg);
+	border: 1px dashed var(--border-strong);
+	overflow: hidden;
+}
+.pfm-pic__frame img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.pfm-pic__ctl {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+.pfm-pic__ctl .dash-btn,
+.pfm-url .dash-btn {
+	margin-top: 0;
+}
+.pfm-url {
+	display: flex;
+	gap: 8px;
+}
+.pfm-url .pfm-input {
+	flex: 1;
+	min-width: 0;
+}
+@media (max-width: 480px) {
+	.pfm-url {
+		flex-direction: column;
+	}
+}
+
+/* ----- Per-repository options & revoke date ------------------------ */
+.pfm-order__row {
+	flex-wrap: wrap;
+}
+.pfm-badge {
+	margin-left: 8px;
+	padding: 1px 8px;
+	border: 1px solid var(--border-strong);
+	border-radius: var(--radius-pill);
+	color: var(--text-muted);
+	font-size: var(--fs-caption);
+	white-space: nowrap;
+}
+/* Second line of a row: full width, indented under the name. */
+.pfm-opts {
+	flex-basis: 100%;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 18px;
+	margin: 0;
+	padding: 0 0 0 calc(1.6em + 38px);
+	border: 0;
+	min-inline-size: 0;
+	font-size: var(--fs-caption);
+	color: var(--text-2);
+}
+.pfm-opts--own {
+	color: var(--text-muted);
+}
+.pfm-opt {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	cursor: pointer;
+}
+.pfm-opt input {
+	accent-color: var(--accent);
+}
+@media (max-width: 480px) {
+	.pfm-opts {
+		padding-left: 0;
 	}
 }

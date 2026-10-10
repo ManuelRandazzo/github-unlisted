@@ -22,6 +22,8 @@ interface ShareBase extends ShareOptions {
 	repo: string;
 	createdAt?: number;
 	expiresAt?: number;
+	// Set when the share was created BY a portfolio rather than by the owner on its own. Such a share lives and dies with that portfolio: it expires on the portfolio's revoke date, and is revoked when it is removed from the portfolio or the portfolio is deleted. Shares the owner made themselves never carry it, and a portfolio never touches them.
+	portfolioId?: string;
 }
 
 // forge absent means github: every record written before multi-forge support has no forge field and must keep resolving unchanged.

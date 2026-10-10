@@ -210,6 +210,21 @@ body[data-viewer-tree="open"] {
 	background: var(--gh-canvas);
 }
 
+.viewer-portfolio-back {
+	font-size: var(--fs-caption);
+	font-weight: 600;
+	white-space: nowrap;
+	color: var(--gh-fg);
+	text-decoration: none;
+	border: 1px solid var(--gh-border-muted);
+	border-radius: 6px;
+	padding: 6px 10px;
+}
+.viewer-portfolio-back:hover {
+	background: var(--gh-canvas);
+	text-decoration: none;
+}
+
 /* "Private repo shared using Github-Unlisted by Rév" */
 .viewer-attrib {
 	font-size: var(--fs-caption);

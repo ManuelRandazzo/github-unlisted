@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { deleteConnection } from "@/lib/forge/connections";
 import {
+	deletePortfoliosForConnection,
+	deletePortfoliosForInstallation,
+} from "@/lib/portfolio-store";
+import {
 	clearSavedSession,
 	clearSession,
 	getSavedSession,
@@ -48,10 +52,12 @@ async function signOut(deleteStoredOauth: boolean): Promise<void> {
 		// This revokes links for both the active session and any remembered account.
 		for (const connectionId of connectionIds) {
 			await deleteSharesForConnection(connectionId);
+			await deletePortfoliosForConnection(connectionId);
 			await deleteConnection(connectionId);
 		}
 		for (const installationId of installationIds) {
 			await deleteSharesForInstallation(installationId);
+			await deletePortfoliosForInstallation(installationId);
 		}
 		await clearSavedSession();
 	} else {

@@ -30,6 +30,7 @@ export type ViewerPayload =
 			owner: string;
 			repo: string;
 			shareId: string;
+			portfolioId?: string;
 			releases: RenderedRelease[];
 	  }
 	| {
@@ -40,6 +41,7 @@ export type ViewerPayload =
 			owner: string;
 			repo: string;
 			shareId: string;
+			portfolioId?: string;
 			contents: Contents;
 			codeHtml: string | null;
 			mdHtml: string | null;
@@ -174,6 +176,7 @@ export async function resolveViewer(
 			owner: target.owner,
 			repo: target.repo,
 			shareId,
+			portfolioId: target.portfolioId,
 			releases,
 		};
 	}
@@ -285,6 +288,7 @@ export async function resolveViewer(
 		owner: target.owner,
 		repo: target.repo,
 		shareId,
+		portfolioId: target.portfolioId,
 		contents,
 		codeHtml,
 		mdHtml,

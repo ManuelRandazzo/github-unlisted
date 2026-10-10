@@ -3,6 +3,10 @@
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { NavLinks } from "@/components/nav-links";
+import {
+	type PortfolioItem,
+	PortfolioManager,
+} from "@/components/portfolio-manager";
 import { SiteDrawer } from "@/components/site-drawer";
 import { SiteFooter } from "@/components/site-footer";
 import { SignOutControl } from "@/components/sign-out-control";
@@ -35,6 +39,9 @@ interface Share {
 	showBranches?: boolean;
 	allowDownload?: boolean;
 	showReleases?: boolean;
+	installationId?: number;
+	connectionId?: string;
+	portfolioId?: string;
 }
 
 // A repository is identified by forge AND name: the same owner/name on two forges is two repositories, and one share must never be shown on the other.
@@ -181,12 +188,14 @@ function YesNo({
 export function DashboardClient({
 	repos,
 	shares,
+	portfolios,
 	login,
 	connections,
 	repositoryInstallUrl,
 }: {
 	repos: Repo[];
 	shares: Share[];
+	portfolios: PortfolioItem[];
 	login: string;
 	connections: Connection[];
 	repositoryInstallUrl: string | null;
@@ -212,6 +221,17 @@ export function DashboardClient({
 		for (const s of shares) m.set(shareKey(s), s);
 		return m;
 	}, [shares]);
+
+	// The portfolio editor follows the Private/Public tab, and a share does not
+	// record its repository's visibility, so it is looked up from the repo list.
+	const managerShares = React.useMemo(() => {
+		const byKey = new Map(repos.map((r) => [repoKey(r), r.private]));
+		return shares.map((s) => ({
+			...s,
+			private: byKey.get(shareKey(s)),
+			managedBy: s.portfolioId,
+		}));
+	}, [repos, shares]);
 
 	const stats = React.useMemo(() => {
 		let shared = 0;
@@ -533,6 +553,16 @@ export function DashboardClient({
 						{error}
 					</div>
 				)}
+
+				{/* Portfolios: one link for several shared repositories */}
+				<PortfolioManager
+					portfolios={portfolios}
+					shares={managerShares}
+					repos={repos}
+					visibility={visFilter}
+					connections={connections}
+					login={login}
+				/>
 
 				{/* Row 4: selectable repo rows */}
 				<section className="dash-repos" aria-label="Repositories">

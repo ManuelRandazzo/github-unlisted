@@ -7,6 +7,8 @@ import { SignOutControl } from "@/components/sign-out-control";
 import { SiteFooter } from "@/components/site-footer";
 import { adapterForConnection, getConnection } from "@/lib/forge/connections";
 import { listInstallationRepos } from "@/lib/github-app";
+import { portfolioImagePath } from "@/lib/portfolio-image";
+import { listPortfoliosForOwner } from "@/lib/portfolio-store";
 import { pageMetadata } from "@/lib/seo";
 import { getSavedSession, getSession } from "@/lib/session";
 import { listSharesForOwner } from "@/lib/share-store";
@@ -151,6 +153,9 @@ export default async function AppPage({
 		showBranches?: boolean;
 		allowDownload?: boolean;
 		showReleases?: boolean;
+		installationId?: number;
+		connectionId?: string;
+		portfolioId?: string;
 	}[] = [];
 	try {
 		const all = await listSharesForOwner({
@@ -168,9 +173,52 @@ export default async function AppPage({
 			showBranches: s.showBranches,
 			allowDownload: s.allowDownload,
 			showReleases: s.showReleases,
+			// Which account owns the share. The portfolio editor needs it, because a
+			// portfolio can only hold one account's repositories.
+			installationId: s.installationId,
+			connectionId: s.connectionId,
+			// Set when a portfolio created the link; it then lives and dies with it.
+			portfolioId: s.portfolioId,
 		}));
 	} catch {
 		// Non-fatal.
+	}
+
+	let portfolios: {
+		id: string;
+		title?: string;
+		description?: string;
+		shareIds: string[];
+		label: string;
+		installationId?: number;
+		connectionId?: string;
+		imageUrl?: string | null;
+		expiresAt?: number | null;
+	}[] = [];
+	try {
+		const all = await listPortfoliosForOwner({
+			installationIds: session.installationIds,
+			connectionIds: session.connections.map((c) => c.id),
+		});
+		// A portfolio may still list shares that have since expired or been
+		// revoked. Showing only live ones means the editor never offers to keep a
+		// dead entry, and saving drops them for good.
+		const live = new Set(shares.map((s) => s.id));
+		portfolios = all.map((p) => ({
+			id: p.id,
+			title: p.title,
+			description: p.description,
+			shareIds: p.shareIds.filter((id) => live.has(id)),
+			label: p.label,
+			installationId: p.installationId,
+			connectionId: p.connectionId,
+			imageUrl: p.imageVersion
+				? portfolioImagePath(p.id, p.imageVersion)
+				: null,
+			expiresAt: p.expiresAt ?? null,
+		}));
+	} catch {
+		// Non-fatal: the dashboard works without the portfolio section's data.
 	}
 
 	if (loadError) {
@@ -190,6 +238,7 @@ export default async function AppPage({
 		<DashboardClient
 			repos={repos}
 			shares={shares}
+			portfolios={portfolios}
 			login={session.login}
 			connections={connections}
 			repositoryInstallUrl={APP_SLUG ? `https://github.com/apps/${APP_SLUG}/installations/new` : null}

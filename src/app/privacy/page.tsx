@@ -147,6 +147,23 @@ export default async function PrivacyPage() {
 							the record itself holds no credential.
 						</li>
 						<li>
+							<strong>Portfolio configuration.</strong> If you group shared
+							repositories into a portfolio, we store the title and
+							description you type, your username (used for the default
+							title), the ordered list of share identifiers, and the same
+							account identifier and timestamps as above. A portfolio page
+							reads each repository&apos;s README on demand to show a
+							preview; that content is not stored or cached. If you add a
+							picture, a copy of that image (uploaded, or downloaded once from
+							the URL you give) is stored until you remove it or delete the
+							portfolio. Visitors load it from this service, never from the
+							original address.
+							If you add a repository that has no share link yet, the portfolio
+							creates one for it, stored exactly like any other share link. It
+							expires on the portfolio&apos;s revoke date, if you set one, and
+							is deleted when you remove the repository or the portfolio.
+						</li>
+						<li>
 							<strong>Authentication tokens.</strong> For GitHub, a short-lived
 							user access token is used in memory only, solely to confirm your
 							identity and list your installations. It is never persisted.
