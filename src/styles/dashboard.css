@@ -19,6 +19,82 @@
 .signin-alt {
     margin-top: auto;
 }
+.signin-choice {
+	width: min(100%, 520px);
+	margin: 16px auto 0;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+.signin-choice__title {
+	margin: 0;
+	font-size: var(--fs-h3);
+	font-weight: 650;
+	color: var(--text);
+}
+.signin-choice__intro {
+	margin: 0;
+	color: var(--text-muted);
+	font-size: var(--fs-body);
+	line-height: 1.6;
+}
+.signin-choice__saved {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 14px 16px;
+	background: var(--surface);
+	border: 1px solid var(--border-soft);
+	border-radius: 12px;
+	color: var(--text-2);
+	font-size: var(--fs-caption);
+}
+.signin-choice__saved p,
+.signin-choice__saved ul {
+	margin: 0;
+}
+.signin-choice__saved ul {
+	padding-left: 18px;
+	line-height: 1.7;
+	word-break: break-word;
+}
+.signin-choice__label {
+	display: block;
+	margin-bottom: 3px;
+	color: var(--text-muted);
+	font-size: var(--fs-caption);
+}
+.signin-choice__primary,
+.signin-choice__secondary,
+.signin-choice__back {
+	min-height: 42px;
+	padding: 9px 14px;
+	border-radius: 9px;
+	font-family: var(--font-sans);
+	font-size: var(--fs-ui);
+	font-weight: 600;
+	cursor: pointer;
+}
+.signin-choice__primary {
+	border: 1px solid var(--accent);
+	background: var(--accent);
+	color: var(--bg);
+}
+.signin-choice__secondary,
+.signin-choice__back {
+	border: 1px solid var(--border-strong);
+	background: transparent;
+	color: var(--text-2);
+}
+.signin-choice__primary:disabled,
+.signin-choice__secondary:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+.signin-choice .signin-alt {
+	margin-top: 4px;
+	text-align: center;
+}
 .dashboard {
 	flex: 1;
 	min-height: 0;
@@ -32,6 +108,15 @@
 }
 
 /* ----- Row 1: welcome ---------------------------------------------- */
+.dash-welcome {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 18px;
+}
+.dash-welcome__copy {
+	min-width: 0;
+}
 .dash-welcome__hi {
 	font-size: var(--fs-h3);
 	color: var(--text-muted);
@@ -41,6 +126,11 @@
 	font-weight: 650;
 	color: var(--text);
 	letter-spacing: 0.01em;
+}
+.dash-btn--repositories {
+	margin-top: 0;
+	white-space: nowrap;
+	text-decoration: none;
 }
 
 /* ----- Row 2: stats ------------------------------------------------ */
@@ -423,6 +513,15 @@
    controls stack, action buttons sit two per row and lose height, and
    every margin/padding tightens. */
 @media (max-width: 480px) {
+	.dash-welcome {
+		align-items: stretch;
+		flex-direction: column;
+		gap: 8px;
+	}
+	.dash-btn--repositories {
+		align-self: flex-start;
+		white-space: normal;
+	}
 	.dashboard {
 		padding: 16px 14px 0;
 		gap: 16px;

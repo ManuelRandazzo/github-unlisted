@@ -1,6 +1,7 @@
 import "@/styles/global.css";
 import { JsonLd } from "@/components/json-ld";
 import { NavLinks } from "@/components/nav-links";
+import { SignOutControl } from "@/components/sign-out-control";
 import { SiteDrawer } from "@/components/site-drawer";
 import { SiteFooter } from "@/components/site-footer";
 import { breadcrumbLd, pageMetadata } from "@/lib/seo";
@@ -65,9 +66,7 @@ export default async function PrivacyPage() {
 				<NavLinks signedIn={Boolean(session)} active="privacy" />
 
 				{session ? (
-					<a className="nav-cta" href="/api/github/logout">
-						Sign Out
-					</a>
+					<SignOutControl className="nav-cta" label="Sign Out" />
 				) : (
 					<a className="nav-cta" href="/app">
 						Sign In

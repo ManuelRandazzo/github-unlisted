@@ -2,10 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { ForgePicker } from "@/components/forge-picker";
 import { NavLinks } from "@/components/nav-links";
 import { SiteDrawer } from "@/components/site-drawer";
 import { SiteFooter } from "@/components/site-footer";
+import { SignOutControl } from "@/components/sign-out-control";
 
 interface Repo {
 	installationId?: number;
@@ -183,11 +183,13 @@ export function DashboardClient({
 	shares,
 	login,
 	connections,
+	repositoryInstallUrl,
 }: {
 	repos: Repo[];
 	shares: Share[];
 	login: string;
 	connections: Connection[];
+	repositoryInstallUrl: string | null;
 	canManageForgeOAuth?: boolean;
 }) {
 	const router = useRouter();
@@ -408,9 +410,7 @@ export function DashboardClient({
 
 				<NavLinks signedIn={true} active="dashboard" />
 
-				<a className="nav-cta" href="/api/github/logout">
-					Sign Out
-				</a>
+				<SignOutControl className="nav-cta" label="Sign Out" />
 
 				<SiteDrawer signedIn={true} active="dashboard" />
 			</header>
@@ -418,8 +418,18 @@ export function DashboardClient({
 			<main className="dashboard">
 				{/* Row 1: welcome */}
 				<section className="dash-welcome">
-					<p className="dash-welcome__hi">Welcome,</p>
-					<h1 className="dash-welcome__name">{login}</h1>
+					<div className="dash-welcome__copy">
+						<p className="dash-welcome__hi">Welcome,</p>
+						<h1 className="dash-welcome__name">{login}</h1>
+					</div>
+					{repositoryInstallUrl && (
+						<a
+							className="dash-btn dash-btn--repositories"
+							href={repositoryInstallUrl}
+						>
+							Add or manage repositories
+						</a>
+					)}
 				</section>
 
 				{/* Row 2: stats */}
@@ -516,10 +526,6 @@ export function DashboardClient({
 							</button>
 						</div>
 					))}
-					<details className="dash-conns__add">
-						<summary>Connect another account</summary>
-						<ForgePicker />
-					</details>
 				</section>
 
 				{error && (

@@ -2,11 +2,13 @@ import "@/styles/global.css";
 import "@/styles/dashboard.css";
 import { DashboardClient } from "@/components/dashboard-client";
 import { ForgePicker } from "@/components/forge-picker";
+import { SignInChoice } from "@/components/sign-in-choice";
+import { SignOutControl } from "@/components/sign-out-control";
 import { SiteFooter } from "@/components/site-footer";
-import { adapterForConnection } from "@/lib/forge/connections";
+import { adapterForConnection, getConnection } from "@/lib/forge/connections";
 import { listInstallationRepos } from "@/lib/github-app";
 import { pageMetadata } from "@/lib/seo";
-import { getSession } from "@/lib/session";
+import { getSavedSession, getSession } from "@/lib/session";
 import { listSharesForOwner } from "@/lib/share-store";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +33,13 @@ export default async function AppPage({
 		const installUrl = APP_SLUG
 			? `https://github.com/apps/${APP_SLUG}/installations/new`
 			: null;
+		const saved = await getSavedSession();
+		const savedConnections = saved
+			? (await Promise.all(saved.connections.map(async (connection) =>
+				(await getConnection(connection.id)) ? connection : null,
+			))).filter((connection): connection is NonNullable<typeof connection> => connection !== null)
+			: [];
+		const hasSavedAccount = Boolean(saved && (saved.installationIds.length > 0 || savedConnections.length > 0));
 		return (
 			<div className="page-shell">
 				<main className="signin-screen">
@@ -42,11 +51,25 @@ export default async function AppPage({
 							Install it and pick the repos to share.
 						</p>
 					)}
-					<ForgePicker />
-					{installUrl && (
-						<a className="signin-alt" href={installUrl}>
-							Or install the app on your repositories
-						</a>
+					{hasSavedAccount && saved ? (
+						<SignInChoice
+							login={saved.login}
+							connections={savedConnections.map((connection) => ({
+								id: connection.id,
+								label: `${connection.forge} · ${connection.host.replace(/^https?:\/\//, "")} · ${connection.login}`,
+							}))}
+							installationCount={saved.installationIds.length}
+							installUrl={installUrl}
+						/>
+					) : (
+						<>
+							<ForgePicker />
+							{installUrl && (
+								<a className="signin-alt" href={installUrl}>
+									Or install the app on your repositories
+								</a>
+							)}
+						</>
 					)}
 				</main>
 				<SiteFooter />
@@ -156,9 +179,7 @@ export default async function AppPage({
 				<main className="signin-screen">
 					<h1>Couldn't load repositories</h1>
 					<p className="signin-error">{loadError}</p>
-					<a className="btn btn--ghost btn--sm" href="/api/github/logout">
-						Sign out
-					</a>
+					<SignOutControl className="btn btn--ghost btn--sm" label="Sign out" />
 				</main>
 				<SiteFooter />
 			</div>
@@ -171,6 +192,7 @@ export default async function AppPage({
 			shares={shares}
 			login={session.login}
 			connections={connections}
+			repositoryInstallUrl={APP_SLUG ? `https://github.com/apps/${APP_SLUG}/installations/new` : null}
 		/>
 	);
 }

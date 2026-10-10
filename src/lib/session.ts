@@ -2,10 +2,13 @@ import crypto from "node:crypto";
 import { cookies } from "next/headers";
 import { isConnectionForge, isConnectionId } from "@/lib/forge/registry";
 import type { ForgeId } from "@/lib/forge/types";
+import { getRedis } from "@/lib/share-store";
 
 // Minimal stateless session: an HMAC-signed cookie. Forge credentials live only in encrypted Redis records.
 
 const COOKIE = "ur_session";
+const SAVED_COOKIE = "ur_saved_accounts";
+const SAVED_SESSION_PREFIX = "saved-session:";
 const DEFAULT_SESSION_TTL = 60 * 60 * 24 * 30;
 const MAX_SESSION_TTL = 60 * 60 * 24 * 365;
 const MAX_COOKIE_LENGTH = 3800;
@@ -186,6 +189,82 @@ export function parseSession(token: string | undefined, now = Date.now()): Sessi
 export async function getSession(): Promise<Session | null> {
 	const store = await cookies();
 	return parseSession(store.get(COOKIE)?.value);
+}
+
+function savedPointer(id: string): string {
+	const payload = b64url(Buffer.from(id));
+	return `${payload}.${sign(payload)}`;
+}
+
+function parseSavedPointer(token: string | undefined): string | null {
+	if (!token) return null;
+	const [payload, mac] = token.split(".");
+	if (!payload || !mac) return null;
+	const expected = sign(payload);
+	if (
+		mac.length !== expected.length ||
+		!crypto.timingSafeEqual(Buffer.from(mac), Buffer.from(expected))
+	) return null;
+	try {
+		const id = Buffer.from(payload, "base64").toString();
+		return isConnectionId(id) ? id : null;
+	} catch {
+		return null;
+	}
+}
+
+function savedSessionKey(id: string): string {
+	if (!isConnectionId(id)) throw new Error("Invalid saved-session id");
+	return `${SAVED_SESSION_PREFIX}${id}`;
+}
+
+export async function getSavedSession(): Promise<Session | null> {
+	const store = await cookies();
+	const id = parseSavedPointer(store.get(SAVED_COOKIE)?.value);
+	if (!id) return null;
+	const raw = await getRedis().get<unknown>(savedSessionKey(id));
+	const session = normalize(raw);
+	if (!session || session.exp <= nowSeconds(Date.now())) return null;
+	return session;
+}
+
+// Retain only the account references needed to offer a later "use saved
+// account" choice. The actual OAuth tokens and OAuth app secrets remain in
+// their existing encrypted Redis connection records; this cookie contains
+// only an opaque, signed pointer to the saved session record.
+export async function rememberSession(session: Session): Promise<void> {
+	const now = Date.now();
+	const id = crypto.randomUUID();
+	const remembered: Session = {
+		...session,
+		connections: session.connections.map(({ id: connectionId, forge, host, login }) => ({
+			id: connectionId,
+			forge,
+			host,
+			login,
+		})),
+		exp: nowSeconds(now) + MAX_SESSION_TTL,
+	};
+	const store = await cookies();
+	const previousId = parseSavedPointer(store.get(SAVED_COOKIE)?.value);
+	await getRedis().set(savedSessionKey(id), remembered, { ex: MAX_SESSION_TTL });
+	store.set(SAVED_COOKIE, savedPointer(id), {
+		httpOnly: true,
+		secure: process.env.NODE_ENV === "production",
+		sameSite: "lax",
+		path: "/",
+		maxAge: MAX_SESSION_TTL,
+	});
+	if (previousId && previousId !== id) {
+		await getRedis().del(savedSessionKey(previousId));
+	}
+}
+
+export async function clearSavedSession(): Promise<void> {
+	const store = await cookies();
+	const id = parseSavedPointer(store.get(SAVED_COOKIE)?.value);
+	if (id) await getRedis().del(savedSessionKey(id));
+	store.delete(SAVED_COOKIE);
 }
 
 async function writeCookie(session: Session): Promise<void> {

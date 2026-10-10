@@ -14,6 +14,7 @@ import {
 import {
 	addConnection,
 	findConnection,
+	getSavedSession,
 	getSession,
 	setSession,
 } from "@/lib/session";
@@ -35,15 +36,22 @@ export async function GET(request: Request) {
 	if (!expectedState || state !== expectedState) return fail("Invalid OAuth state");
 	try {
 		const pending = await consumeOAuthState(state);
-		if (!pending || pending.expiresAt <= Date.now() ||
-   pending.redirectUri !== `${origin}/api/forge/callback`) {
-   return fail("Invalid or expired OAuth state");
-  }
+		if (
+			!pending ||
+			pending.expiresAt <= Date.now() ||
+			pending.redirectUri !== `${origin}/api/forge/callback`
+		) {
+			return fail("Invalid or expired OAuth state");
+		}
 		const tokens = await exchangeOAuthCode(state, pending, code);
 		const user = await getOAuthUser(pending, tokens.accessToken);
 		const existingSession = await getSession();
+		const savedSession = await getSavedSession();
 		const existingConnection = findConnection(
-			existingSession?.connections ?? [],
+			[
+				...(existingSession?.connections ?? []),
+				...(savedSession?.connections ?? []),
+			],
 			pending.forge,
 			pending.host,
 			user.login,
@@ -74,6 +82,7 @@ export async function GET(request: Request) {
 			await setSession({
 				login: existingSession?.login ?? user.login,
 				userId: existingSession?.userId ?? user.id,
+				authProvider: existingSession?.authProvider ?? "forge",
 				installationIds: existingSession?.installationIds ?? [],
 				connections: nextConnections,
 				expiresAt: pending.expiresAt,
