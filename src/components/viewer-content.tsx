@@ -108,7 +108,7 @@ function ViewerShell({
 				<ViewerAttribution />
 				{portfolioId && (
 					<Link className="viewer-portfolio-back" href={portfolioPath(portfolioId)}>
-						← Back to portfolio
+						Back to portfolio
 					</Link>
 				)}
 			</header>
